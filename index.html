@@ -15,23 +15,38 @@
   @keyframes s{to{transform:rotate(360deg)}}
   #fb{font-size:14px;color:#5B6878;text-align:center;max-width:340px;line-height:1.5}
   #fb a{color:#1F4E79;font-weight:600}
+  #newtab{position:fixed;right:14px;bottom:14px;z-index:5;background:#1F4E79;color:#fff;text-decoration:none;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;opacity:.55;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:opacity .2s}
+  #newtab:hover{opacity:1}
 </style>
 </head>
 <body>
 <div id="wait"><div class="spin"></div><div><strong>SERVICES PAYMENT WOORI CONSULTING</strong></div>
   <div id="fb" hidden>Aplikasi belum tampil? Pastikan Anda sudah login akun Google, atau <a id="direct" target="_blank" rel="noopener">buka di tab baru</a>.</div></div>
+<a id="newtab" target="_blank" rel="noopener" title="Buka di tab baru">↗ Tab baru</a>
 <iframe id="app" title="SERVICES PAYMENT WOORI CONSULTING" allow="clipboard-write; clipboard-read"></iframe>
 <script>
   /* ====== GANTI dengan URL Web App (berakhiran /exec) dari Apps Script ====== */
-  var APP_URL = "https://script.google.com/macros/s/AKfycbyugNN6hO60rDsi5uV5YMho6uEfZAtu8EoZmWURZ2SYIqDlvp7KqWDCHSTOsMYcHrSh/exec";
+  var APP_URL = "https://script.google.com/macros/s/GANTI_DENGAN_ID_DEPLOYMENT/exec";
   /* ========================================================================= */
-  var q = location.search || "";             // meneruskan ?lang=id / ?lang=en ke aplikasi
+  var params = new URLSearchParams(location.search);
+  var mode = params.get("mode"); params.delete("mode");      // ?mode=frame / ?mode=direct untuk memaksa
+  var q = params.toString() ? "?" + params.toString() : "";   // meneruskan ?lang=id / ?lang=en
   var src = APP_URL + q;
-  var f = document.getElementById("app"), w = document.getElementById("wait");
-  document.getElementById("direct").href = src;
-  f.onload = function(){ w.classList.add("hide"); };
-  setTimeout(function(){ document.getElementById("fb").hidden = false; }, 8000);
-  f.src = src;
+  // HP & tablet (dan Safari) memblokir login Google di dalam halaman sematan -> error 401.
+  // Di perangkat itu, langsung buka aplikasinya; di komputer tetap disematkan.
+  var ua = navigator.userAgent;
+  var mobile = /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
+  var safari = /^((?!chrome|android|crios|fxios|edg).)*safari/i.test(ua);
+  if (mode !== "frame" && (mode === "direct" || mobile || safari)) {
+    location.replace(src);
+  } else {
+    var f = document.getElementById("app"), w = document.getElementById("wait");
+    document.getElementById("direct").href = src;
+    document.getElementById("newtab").href = src;
+    f.onload = function(){ w.classList.add("hide"); };
+    setTimeout(function(){ document.getElementById("fb").hidden = false; }, 8000);
+    f.src = src;
+  }
 </script>
 </body>
 </html>
