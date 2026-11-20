@@ -22,7 +22,6 @@
 <body>
 <div id="wait"><div class="spin"></div><div><strong>SERVICES PAYMENT WOORI CONSULTING</strong></div>
   <div id="fb" hidden>Aplikasi belum tampil? Pastikan Anda sudah login akun Google, atau <a id="direct" target="_blank" rel="noopener">buka di tab baru</a>.</div></div>
-<a id="newtab" target="_blank" rel="noopener" title="Buka di tab baru">↗ Tab baru</a>
 <iframe id="app" title="SERVICES PAYMENT WOORI CONSULTING" allow="clipboard-write; clipboard-read"></iframe>
 <script>
   /* ====== GANTI dengan URL Web App (berakhiran /exec) dari Apps Script ====== */
@@ -42,7 +41,6 @@
   } else {
     var f = document.getElementById("app"), w = document.getElementById("wait");
     document.getElementById("direct").href = src;
-    document.getElementById("newtab").href = src;
     f.onload = function(){ w.classList.add("hide"); };
     setTimeout(function(){ document.getElementById("fb").hidden = false; }, 8000);
     f.src = src;
