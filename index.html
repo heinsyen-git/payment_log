@@ -37,8 +37,9 @@
   var ua = navigator.userAgent;
   var mobile = /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
   var safari = /^((?!chrome|android|crios|fxios|edg).)*safari/i.test(ua);
-  // Bawaan: langsung buka aplikasi (paling stabil di semua perangkat). Tambahkan ?mode=frame untuk mencoba mode sematan.
-  if (mode !== "frame") {
+  // Bawaan: aplikasi tampil di dalam domain ini (alamat tetap spwc.hnz.my.id).
+  // Syarat: deployment Apps Script "Yang memiliki akses: Siapa saja". Tambahkan ?mode=direct untuk membuka langsung di Google.
+  if (mode === "direct") {
     location.replace(src);
   } else {
     var f = document.getElementById("app"), w = document.getElementById("wait");
