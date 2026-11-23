@@ -273,6 +273,10 @@ body.locked{overflow:hidden}
 .auth-sub{color:var(--muted);font-size:14px;margin:0 0 18px}
 #aForm{display:flex;flex-direction:column;gap:12px}
 .auth-btn{width:100%;padding:12px;font-size:15px;margin-top:4px}
+#aForgot{align-self:center;font-size:13.5px}
+.auth-note{font-size:12.5px;color:var(--muted);line-height:1.45}
+.auth-err.ok{background:var(--paid-soft);color:var(--paid)}
+.profile{margin-bottom:6px}
 .auth-err{background:var(--due-soft);color:var(--due);border-radius:8px;padding:9px 12px;font-size:13.5px;font-weight:500}
 .linkbtn{background:none;border:0;color:var(--primary);font:inherit;font-weight:600;cursor:pointer;padding:4px}
 .codein{font-size:24px!important;letter-spacing:10px;text-align:center;font-variant-numeric:tabular-nums;font-family:"Ubuntu",monospace!important}
@@ -344,15 +348,20 @@ nav.tabs button{transition:background-color .25s,color .25s,opacity .2s,box-shad
     <h1 id="aTitle"></h1>
     <p class="auth-sub" id="aSub"></p>
     <form id="aForm" autocomplete="on" novalidate>
-      <div class="aStep" data-step="setup login"><label class="fl">Username<input id="aUser" autocomplete="username" autocapitalize="none" spellcheck="false"></label></div>
+      <div class="aStep" data-step="setup login forgot"><label class="fl"><span id="aUserLbl">Username</span><input id="aUser" autocomplete="username" autocapitalize="none" spellcheck="false"></label></div>
       <div class="aStep" data-step="setup"><label class="fl">Full name<input id="aNama" autocomplete="name"></label></div>
+      <div class="aStep" data-step="setup"><label class="fl">Email (for password recovery)<input id="aEmail" type="email" autocomplete="email" autocapitalize="none"></label></div>
       <div class="aStep" data-step="setup login"><label class="fl">Password<input id="aPw" type="password" autocomplete="current-password"></label></div>
       <div class="aStep" data-step="setup"><label class="fl">Repeat password<input id="aPw2" type="password" autocomplete="new-password"></label></div>
       <div class="aStep" data-step="enroll"><div class="qrbox"><div id="aQr"></div><div class="vsub">Can't scan? Enter this key manually:</div><code id="aSecret"></code></div></div>
-      <div class="aStep" data-step="2fa enroll"><label class="fl">6-digit code<input id="aCode" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" class="codein"></label></div>
+      <div class="aStep" data-step="2fa enroll reset"><label class="fl">6-digit code<input id="aCode" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" class="codein"></label></div>
+      <div class="aStep" data-step="reset"><label class="fl">New password<input id="aNew1" type="password" autocomplete="new-password"></label></div>
+      <div class="aStep" data-step="reset"><label class="fl">Repeat new password<input id="aNew2" type="password" autocomplete="new-password"></label></div>
+      <div class="aStep auth-note" data-step="reset">If the account exists and has an email, a code has been sent. No email? Use your authenticator code, or ask an administrator to reset your password.</div>
       <div class="auth-err" id="aErr" hidden></div>
       <button class="btn auth-btn" id="aBtn" type="submit"></button>
       <button type="button" class="linkbtn" id="aBack" hidden>Back</button>
+      <button type="button" class="linkbtn" id="aForgot" hidden>Forgot password?</button>
     </form>
     <div class="auth-lang"><a data-lang="id" target="_top">Bahasa Indonesia</a><span>·</span><a data-lang="en" target="_top">English</a></div>
   </div>
@@ -579,6 +588,11 @@ nav.tabs button{transition:background-color .25s,color .25s,opacity .2s,box-shad
       <p class="hint">Your sign-in details and two-step verification.</p>
       <div class="acct-top"><span class="uav big" id="acAv"></span><div><strong id="acName"></strong><div class="vsub" id="acMeta"></div></div></div>
       <div class="tfa" id="tfaBox"></div>
+      <form class="f profile" id="profForm" autocomplete="off">
+        <label class="fl">Full name<input id="prNama"></label>
+        <label class="fl w2">Email (for password recovery)<input id="prEmail" type="email" autocapitalize="none"><span class="vsub">Used to receive a code if you forget your password.</span></label>
+        <div class="fl" style="justify-content:flex-end"><button class="btn ghost" type="submit">Save</button></div>
+      </form>
       <details class="pwbox"><summary>Change password</summary>
         <form class="f" id="pwForm" autocomplete="off">
           <label class="fl">Current password<input id="pwOld" type="password" autocomplete="current-password"></label>
@@ -602,11 +616,12 @@ nav.tabs button{transition:background-color .25s,color .25s,opacity .2s,box-shad
     <div class="panel adminonly">
       <h2>Users</h2>
       <p class="hint">Who can sign in to this app. Administrators only.</p>
-      <div class="scroll"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Authenticator</th><th>Status</th><th>Last sign-in</th></tr></thead><tbody id="usrList"></tbody></table></div>
+      <div class="scroll"><table><thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>Authenticator</th><th>Status</th><th>Last sign-in</th></tr></thead><tbody id="usrList"></tbody></table></div>
       <h3 class="subh" id="usrFormTitle">Add user</h3>
       <form class="f" id="usrForm" autocomplete="off">
         <label class="fl">Username<input id="nUser" autocapitalize="none" spellcheck="false"></label>
         <label class="fl">Name<input id="nNama"></label>
+        <label class="fl">Email<input id="nEmail" type="email" autocapitalize="none"></label>
         <label class="fl">Role<select id="nRole"><option value="user">User</option><option value="admin">Administrator</option></select></label>
         <label class="fl">Status<select id="nAktif"><option value="1">Active</option><option value="0">Inactive</option></select></label>
         <label class="fl w2"><span id="nPwLbl">Password (min. 8 characters)</span><input id="nPw" type="password" autocomplete="new-password"></label>
@@ -1408,10 +1423,10 @@ $("budForm").onsubmit=async e=>{e.preventDefault();if(!guard())return;
   const pr=progress(PG_SAVE);try{applyData(await api("saveSettings",{tglPengajuan:Number($("bTgl").value),hariPengingat:Number($("bHari").value)}));pr.done("Data saved successfully")}catch(err){pr.fail();writeErr(err)}};
 
 // ---------- login & keamanan ----------
-const TX={"login": "Sign in", "loginSub": "Sign in to continue.", "setup": "Create administrator account", "setupSub": "First-time setup: this account will manage users and security.", "user": "Username", "nama": "Full name", "pw": "Password", "pw2": "Repeat password", "code": "6-digit code", "twofa": "Two-step verification", "twofaSub": "Open your authenticator app (Google Authenticator, Microsoft Authenticator, Authy…) and enter the 6-digit code for SPWC.", "enroll": "Set up authenticator", "enrollSub": "Scan this QR code with your authenticator app, then enter the 6-digit code it shows.", "manual": "Can't scan? Enter this key manually:", "btnLogin": "Sign in", "btnSetup": "Create account & sign in", "btnVerify": "Verify", "btnEnroll": "Activate", "back": "Back", "logout": "Sign out", "checking": "Checking…", "E_BAD_LOGIN": "Wrong username or password.", "E_LOCKED": "Too many failed attempts. Try again in 15 minutes.", "E_BAD_CODE": "Invalid code. Check the time on your phone and try again.", "E_TICKET_EXPIRED": "The verification step expired. Please sign in again.", "E_PW_SHORT": "Password must be at least 8 characters.", "E_PW_MATCH": "The passwords do not match.", "E_BAD_USERNAME": "Username: 3–30 characters, letters/numbers/._- only.", "E_USER_EXISTS": "That username already exists.", "E_ALREADY_SETUP": "Setup was already completed. Please sign in.", "E_BAD_OLD_PW": "Your current password is wrong.", "E_SELF_LOCK": "You cannot remove your own admin role or deactivate yourself.", "E_2FA_REQUIRED": "Two-step verification is required by the security policy.", "E_FORBIDDEN": "Only administrators can do this.", "E_AUTH": "Your session has ended. Please sign in again.", "E_GEN": "Something went wrong. Please try again.", "idleOut": "You were signed out after a period of inactivity.", "acct": "My account", "acctSub": "Your sign-in details and two-step verification.", "role_admin": "Administrator", "role_user": "User", "chgPw": "Change password", "oldPw": "Current password", "newPw": "New password", "newPw2": "Repeat new password", "savePw": "Update password", "pwOk": "Password updated", "tfaOn": "Authenticator is ON", "tfaOff": "Authenticator is OFF", "tfaOnSub": "A 6-digit code from your authenticator app is required at every sign-in.", "tfaOffSub": "Add a second step to sign-in with Google Authenticator or a similar app.", "tfaEnable": "Turn on authenticator", "tfaDisable": "Turn off", "tfaDisablePrompt": "Enter the 6-digit code from your authenticator app to turn it off:", "tfaEnabled": "Authenticator activated", "tfaDisabled": "Authenticator turned off", "sec": "Security", "secSub": "Applies to all users. Administrators only.", "secHours": "Session length (hours, max 6)", "secIdle": "Auto sign-out when idle (minutes, 0 = off)", "secMax": "Max failed sign-in attempts before 15-minute lock", "secReq": "Require authenticator for all users", "secSave": "Save security settings", "users": "Users", "usersSub": "Who can sign in to this app. Administrators only.", "uUser": "Username", "uNama": "Name", "uRole": "Role", "u2fa": "Authenticator", "uStatus": "Status", "uLast": "Last sign-in", "active": "Active", "inactive": "Inactive", "on": "On", "off": "Off", "uAdd": "Add user", "uEdit": "Edit user", "uPwNew": "Password (min. 8 characters)", "uPwEdit": "New password (leave empty to keep)", "uSave": "Save user", "uCancel": "Cancel", "uReset2fa": "Reset authenticator", "uReset2faQ": "Reset the authenticator for this user? They will need to set it up again.", "uSaved": "User saved", "u2faReset": "Authenticator reset", "never": "never"};
+const TX={"login": "Sign in", "loginSub": "Sign in to continue.", "setup": "Create administrator account", "setupSub": "First-time setup: this account will manage users and security.", "user": "Username", "nama": "Name", "pw": "Password", "pw2": "Repeat password", "code": "6-digit code", "twofa": "Two-step verification", "twofaSub": "Open your authenticator app (Google Authenticator, Microsoft Authenticator, Authy…) and enter the 6-digit code for SPWC.", "enroll": "Set up authenticator", "enrollSub": "Scan this QR code with your authenticator app, then enter the 6-digit code it shows.", "manual": "Can't scan? Enter this key manually:", "btnLogin": "Sign in", "btnSetup": "Create account & sign in", "btnVerify": "Verify", "btnEnroll": "Activate", "back": "Back", "logout": "Sign out", "checking": "Checking…", "E_BAD_LOGIN": "Wrong username or password.", "E_LOCKED": "Too many failed attempts. Try again in 15 minutes.", "E_BAD_CODE": "Invalid code. Check the time on your phone and try again.", "E_TICKET_EXPIRED": "The verification step expired. Please sign in again.", "E_PW_SHORT": "Password must be at least 8 characters.", "E_PW_MATCH": "The passwords do not match.", "E_BAD_USERNAME": "Username: 3–30 characters, letters/numbers/._- only.", "E_USER_EXISTS": "That username already exists.", "E_ALREADY_SETUP": "Setup was already completed. Please sign in.", "E_BAD_OLD_PW": "Your current password is wrong.", "E_SELF_LOCK": "You cannot remove your own admin role or deactivate yourself.", "E_2FA_REQUIRED": "Two-step verification is required by the security policy.", "E_FORBIDDEN": "Only administrators can do this.", "E_AUTH": "Your session has ended. Please sign in again.", "E_GEN": "Something went wrong. Please try again.", "idleOut": "You were signed out after a period of inactivity.", "acct": "My account", "acctSub": "Your sign-in details and two-step verification.", "role_admin": "Administrator", "role_user": "User", "chgPw": "Change password", "oldPw": "Current password", "newPw": "New password", "newPw2": "Repeat new password", "savePw": "Update password", "pwOk": "Password updated", "tfaOn": "Authenticator is ON", "tfaOff": "Authenticator is OFF", "tfaOnSub": "A 6-digit code from your authenticator app is required at every sign-in.", "tfaOffSub": "Add a second step to sign-in with Google Authenticator or a similar app.", "tfaEnable": "Turn on authenticator", "tfaDisable": "Turn off", "tfaDisablePrompt": "Enter the 6-digit code from your authenticator app to turn it off:", "tfaEnabled": "Authenticator activated", "tfaDisabled": "Authenticator turned off", "sec": "Security", "secSub": "Applies to all users. Administrators only.", "secHours": "Session length (hours, max 6)", "secIdle": "Auto sign-out when idle (minutes, 0 = off)", "secMax": "Max failed sign-in attempts before 15-minute lock", "secReq": "Require authenticator for all users", "secSave": "Save security settings", "users": "Users", "usersSub": "Who can sign in to this app. Administrators only.", "uUser": "Username", "uNama": "Name", "uRole": "Role", "u2fa": "Authenticator", "uStatus": "Status", "uLast": "Last sign-in", "active": "Active", "inactive": "Inactive", "on": "On", "off": "Off", "uAdd": "Add user", "uEdit": "Edit user", "uPwNew": "Password (min. 8 characters)", "uPwEdit": "New password (leave empty to keep)", "uSave": "Save user", "uCancel": "Cancel", "uReset2fa": "Reset authenticator", "uReset2faQ": "Reset the authenticator for this user? They will need to set it up again.", "uSaved": "User saved", "u2faReset": "Authenticator reset", "never": "never", "forgot": "Forgot password?", "forgotT": "Reset password", "forgotSub": "Enter your username or email. We'll send a 6-digit code to the email on your account.", "resetT": "Set a new password", "resetSub": "Enter the code from your email — or from your authenticator app if it's on — and choose a new password.", "userOrEmail": "Username or email", "email": "Email (for password recovery)", "btnSend": "Send code", "btnReset": "Save new password", "resetOk": "Password changed. Please sign in with your new password.", "sentNote": "If the account exists and has an email, a code has been sent. No email? Use your authenticator code, or ask an administrator to reset your password.", "E_BAD_EMAIL": "Please enter a valid email address.", "profile": "Name & email", "profSave": "Save", "profOk": "Profile saved", "emailHint": "Used to receive a code if you forget your password.", "thEmail": "Email", "userLbl": "Username", "oldLbl": "Full name"};
 S.token=(()=>{try{return localStorage.getItem("spwc-token")||""}catch(e){return ""}})();
 S.me=null;S.security={sessionHours:6,idleMinutes:30,require2fa:false,maxAttempts:5};S.authMode="";S.ticket="";
-function setAuthErr(m){const e=$("aErr");e.textContent=m||"";e.hidden=!m}
+function setAuthErr(m){const e=$("aErr");e.classList.remove("ok");e.textContent=m||"";e.hidden=!m}
 async function showAuth(mode,msg){
   $("auth").hidden=false;document.body.classList.add("locked");setAuthErr(msg||"");
   if(!mode){$("aTitle").textContent=TX.checking;$("aSub").textContent="";$("aBtn").hidden=true;$("aForm").querySelectorAll(".aStep").forEach(x=>x.hidden=true);
@@ -1420,12 +1435,12 @@ async function showAuth(mode,msg){
       mode=st.hasUsers?"login":"setup"}catch(e){mode="login"}}
   S.authMode=mode;$("aBtn").hidden=false;$("aBtn").disabled=false;
   $("aForm").querySelectorAll(".aStep").forEach(x=>x.hidden=x.dataset.step.split(" ").indexOf(mode)<0);
-  const M={setup:[TX.setup,TX.setupSub,TX.btnSetup],login:[TX.login,TX.loginSub,TX.btnLogin],"2fa":[TX.twofa,TX.twofaSub,TX.btnVerify],enroll:[TX.enroll,TX.enrollSub,TX.btnEnroll]}[mode];
+  const M={forgot:[TX.forgotT,TX.forgotSub,TX.btnSend],reset:[TX.resetT,TX.resetSub,TX.btnReset],setup:[TX.setup,TX.setupSub,TX.btnSetup],login:[TX.login,TX.loginSub,TX.btnLogin],"2fa":[TX.twofa,TX.twofaSub,TX.btnVerify],enroll:[TX.enroll,TX.enrollSub,TX.btnEnroll]}[mode];
   $("aTitle").textContent=M[0];$("aSub").textContent=M[1];$("aBtn").textContent=M[2];
-  $("aBack").hidden=!(mode==="2fa"||mode==="enroll");$("aCode").value="";
+  $("aBack").hidden=!(mode==="2fa"||mode==="enroll"||mode==="forgot"||mode==="reset");$("aForgot").hidden=mode!=="login";$("aUserLbl").textContent=mode==="forgot"?TX.userOrEmail:TX.userLbl;$("aNew1").value="";$("aNew2").value="";$("aCode").value="";
   if(mode==="enroll"){$("aQr").innerHTML="";$("aSecret").textContent="…";
     try{const r=await gsr("call",S.token,"totpBegin",[]);await drawQr($("aQr"),r.uri);$("aSecret").textContent=r.secret.replace(/(.{4})/g,"$1 ").trim()}catch(e){setAuthErr(errMsg(e))}}
-  setTimeout(()=>{const f=mode==="2fa"||mode==="enroll"?$("aCode"):mode==="setup"||!$("aUser").value?$("aUser"):$("aPw");f&&f.focus()},50);
+  setTimeout(()=>{const f=mode==="2fa"||mode==="enroll"||mode==="reset"?$("aCode"):mode==="setup"||!$("aUser").value?$("aUser"):$("aPw");f&&f.focus()},50);
 }
 function hideAuth(){$("auth").hidden=true;document.body.classList.remove("locked");$("aPw").value="";$("aPw2").value="";$("aCode").value=""}
 async function drawQr(el,text){try{await lib("qr");el.innerHTML="";new QRCode(el,{text,width:176,height:176,correctLevel:QRCode.CorrectLevel.M})}catch(e){el.innerHTML='<div class="vsub">QR</div>'}}
@@ -1436,15 +1451,19 @@ $("aForm").onsubmit=async e=>{e.preventDefault();const b=$("aBtn");if(b.disabled
   const u=$("aUser").value.trim(),p=$("aPw").value,code=$("aCode").value.replace(/\s/g,"");
   b.disabled=true;const lbl=b.textContent;b.textContent=TX.checking;
   try{
+    if(S.authMode==="forgot"){if(!u){$("aUser").focus();return}await gsr("forgotPassword",u);S.resetUser=u;showAuth("reset");return}
+    else if(S.authMode==="reset"){const n1=$("aNew1").value;if(!/^\d{6}$/.test(code)){setAuthErr(TX.E_BAD_CODE);return}if(n1.length<8)throw new Error("PW_SHORT");if(n1!==$("aNew2").value){setAuthErr(TX.E_PW_MATCH);return}
+      const r=await gsr("resetPassword",S.resetUser,code,n1);$("aUser").value=r.username||S.resetUser;await showAuth("login");setAuthErr("");$("aErr").classList.add("ok");$("aErr").textContent=TX.resetOk;$("aErr").hidden=false;$("aPw").focus();return}
     if(S.authMode==="setup"){if(p.length<8)throw new Error("PW_SHORT");if(p!==$("aPw2").value){setAuthErr(TX.E_PW_MATCH);return}
-      onSession(await gsr("setupAdmin",u,$("aNama").value.trim(),p))}
+      onSession(await gsr("setupAdmin",u,$("aNama").value.trim(),p,$("aEmail").value.trim()))}
     else if(S.authMode==="login"){const r=await gsr("login",u,p);if(r.need2fa){S.ticket=r.ticket;showAuth("2fa");return}onSession(r)}
     else if(S.authMode==="2fa"){onSession(await gsr("login2fa",S.ticket,code))}
     else if(S.authMode==="enroll"){S.me=await gsr("call",S.token,"totpConfirm",[code]);renderMe();S.enrollForced=false;hideAuth();toast(TX.tfaEnabled);loadData()}
   }catch(err){setAuthErr(errMsg(err));if(errCode(err)==="TICKET_EXPIRED")setTimeout(()=>showAuth("login",TX.E_TICKET_EXPIRED),1200)}
   finally{b.disabled=false;if(b.textContent===TX.checking)b.textContent=lbl}};
-$("aCode").addEventListener("input",e=>{e.target.value=e.target.value.replace(/\D/g,"").slice(0,6);if(e.target.value.length===6)$("aForm").requestSubmit()});
-$("aBack").onclick=()=>{if(S.authMode==="enroll"){if(S.enrollForced)signOut();else hideAuth()}else showAuth("login")};
+$("aCode").addEventListener("input",e=>{e.target.value=e.target.value.replace(/\D/g,"").slice(0,6);if(e.target.value.length===6&&(S.authMode==="2fa"||S.authMode==="enroll"))$("aForm").requestSubmit()});
+$("aForgot").onclick=()=>showAuth("forgot");
+$("aBack").onclick=()=>{if(S.authMode==="forgot"||S.authMode==="reset"){showAuth("login");return}if(S.authMode==="enroll"){if(S.enrollForced)signOut();else hideAuth()}else showAuth("login")};
 function signOut(msg){const t=S.token;S.token="";S.me=null;try{localStorage.removeItem("spwc-token");localStorage.removeItem("spwc-data")}catch(e){}
   if(t)gsr("logout",t).catch(()=>{});S.vendors=[];S.payments=[];S.purchases=[];S.pengajuan=[];S.ready=false;render();$("uChip").hidden=true;showAuth("",msg)}
 $("logoutBtn").onclick=()=>signOut();
@@ -1452,7 +1471,7 @@ $("logoutBtn").onclick=()=>signOut();
 S.lastAct=Date.now();["click","keydown","mousemove","touchstart","scroll"].forEach(ev=>document.addEventListener(ev,()=>{S.lastAct=Date.now()},{passive:true}));
 setInterval(()=>{const m=Number(S.security.idleMinutes)||0;if(S.token&&m>0&&Date.now()-S.lastAct>m*60000)signOut(TX.idleOut)},20000);
 const initials=n=>String(n||"?").trim().split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase();
-function renderMe(){const u=S.me;if(!u)return;$("uChip").hidden=false;$("uAv").textContent=initials(u.nama||u.username);$("uChipName").textContent=u.nama||u.username;
+function renderMe(){const u=S.me;if(!u)return;if(document.activeElement!==$("prNama"))$("prNama").value=u.nama||"";if(document.activeElement!==$("prEmail"))$("prEmail").value=u.email||"";$("uChip").hidden=false;$("uAv").textContent=initials(u.nama||u.username);$("uChipName").textContent=u.nama||u.username;
   $("acAv").textContent=initials(u.nama||u.username);$("acName").textContent=u.nama||u.username;$("acMeta").textContent="@"+u.username+" · "+(u.role==="admin"?TX.role_admin:TX.role_user);
   document.body.classList.toggle("is-admin",u.role==="admin");
   $("tfaBox").innerHTML=u.totpAktif?`<div class="tfa-st on"><strong>🔒 ${TX.tfaOn}</strong><div class="vsub">${TX.tfaOnSub}</div></div>${S.security.require2fa?"":`<button class="btn ghost sm" type="button" id="tfaOff">${TX.tfaDisable}</button>`}`
@@ -1464,6 +1483,8 @@ function renderMe(){const u=S.me;if(!u)return;$("uChip").hidden=false;$("uAv").t
 }
 function renderSecurity(){const s=S.security;if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest("#secForm"))return;
   $("sHours").value=s.sessionHours;$("sIdle").value=s.idleMinutes;$("sMax").value=s.maxAttempts;$("sReq").checked=!!s.require2fa}
+$("profForm").onsubmit=async e=>{e.preventDefault();const pr=progress(PG_SAVE);
+  try{S.me=await api("saveProfile",{nama:$("prNama").value.trim(),email:$("prEmail").value.trim()});pr.done(TX.profOk);renderMe()}catch(err){pr.fail();toast(errMsg(err))}};
 $("pwForm").onsubmit=async e=>{e.preventDefault();const n=$("pwNew").value;if(n.length<8){toast(TX.E_PW_SHORT);return}if(n!==$("pwNew2").value){toast(TX.E_PW_MATCH);return}
   const pr=progress(PG_SAVE);try{await api("changePassword",$("pwOld").value,n);pr.done(TX.pwOk);$("pwForm").reset()}catch(err){pr.fail();toast(errMsg(err))}};
 $("secForm").onsubmit=async e=>{e.preventDefault();const pr=progress(PG_SAVE);
@@ -1472,18 +1493,18 @@ $("secForm").onsubmit=async e=>{e.preventDefault();const pr=progress(PG_SAVE);
 // kelola pengguna (admin)
 S.users=[];S.editUser="";
 async function loadUsers(){try{S.users=await api("listUsers");renderUsers()}catch(e){}}
-function renderUsers(){$("usrList").innerHTML=S.users.map(u=>`<tr class="click" data-u="${esc(u.username)}" tabindex="0"><td class="vname">${esc(u.username)}</td><td>${esc(u.nama)}</td>
+function renderUsers(){$("usrList").innerHTML=S.users.map(u=>`<tr class="click" data-u="${esc(u.username)}" tabindex="0"><td class="vname">${esc(u.username)}</td><td>${esc(u.nama)}</td><td class="vsub">${esc(u.email||"–")}</td>
   <td>${u.role==="admin"?`<span class="pill thn">${TX.role_admin}</span>`:TX.role_user}</td><td>${u.totpAktif?"🔒 "+TX.on:TX.off}</td>
   <td>${u.aktif?TX.active:`<span class="pill off">${TX.inactive}</span>`}</td><td class="vsub">${esc(u.lastLogin||TX.never)}</td></tr>`).join("");
   $("usrList").querySelectorAll("tr.click").forEach(tr=>{tr.onclick=()=>editUser(tr.dataset.u);tr.onkeydown=e=>{if(e.key==="Enter")editUser(tr.dataset.u)}})}
 function resetUserForm(){S.editUser="";$("usrForm").reset();$("nUser").disabled=false;$("usrFormTitle").textContent=TX.uAdd;$("nPwLbl").textContent=TX.uPwNew;$("nCancel").hidden=true;$("nReset2fa").hidden=true}
-function editUser(name){const u=S.users.find(x=>x.username===name);if(!u)return;S.editUser=name;$("nUser").value=u.username;$("nUser").disabled=true;$("nNama").value=u.nama||"";
+function editUser(name){const u=S.users.find(x=>x.username===name);if(!u)return;S.editUser=name;$("nUser").value=u.username;$("nUser").disabled=true;$("nNama").value=u.nama||"";$("nEmail").value=u.email||"";
   $("nRole").value=u.role==="admin"?"admin":"user";$("nAktif").value=u.aktif?"1":"0";$("nPw").value="";$("usrFormTitle").textContent=TX.uEdit;$("nPwLbl").textContent=TX.uPwEdit;
   $("nCancel").hidden=false;$("nReset2fa").hidden=!u.totpAktif;$("usrForm").scrollIntoView({behavior:"smooth",block:"center"})}
 $("nCancel").onclick=resetUserForm;
 $("usrForm").onsubmit=async e=>{e.preventDefault();const pw=$("nPw").value;if((pw||!S.editUser)&&pw.length<8){toast(TX.E_PW_SHORT);return}
   const pr=progress(PG_SAVE);
-  try{S.users=await api("saveUser",{username:$("nUser").value.trim(),nama:$("nNama").value.trim(),role:$("nRole").value,aktif:$("nAktif").value==="1",password:pw,isNew:!S.editUser});
+  try{S.users=await api("saveUser",{username:$("nUser").value.trim(),nama:$("nNama").value.trim(),email:$("nEmail").value.trim(),role:$("nRole").value,aktif:$("nAktif").value==="1",password:pw,isNew:!S.editUser});
     pr.done(TX.uSaved);renderUsers();resetUserForm()}catch(err){pr.fail();toast(errMsg(err))}};
 $("nReset2fa").onclick=async()=>{if(!S.editUser||!confirm(TX.uReset2faQ))return;const pr=progress(PG_SAVE);
   try{S.users=await api("resetUser2fa",S.editUser);pr.done(TX.u2faReset);renderUsers();resetUserForm()}catch(err){pr.fail();toast(errMsg(err))}};
@@ -1491,7 +1512,7 @@ $("nReset2fa").onclick=async()=>{if(!S.editUser||!confirm(TX.uReset2faQ))return;
 // ---------- koneksi ke spreadsheet ----------
 function gsr(fn,...args){return new Promise((res,rej)=>{if(!(window.google&&google.script&&google.script.run)){rej(new Error("NO_GAS"));return}
   google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args)})}
-const errCode=e=>{const m=String((e&&e.message)||e||"");const k=["AUTH","NEED_2FA_SETUP","BAD_LOGIN","LOCKED","BAD_CODE","TICKET_EXPIRED","PW_SHORT","BAD_USERNAME","USER_EXISTS","ALREADY_SETUP","BAD_OLD_PW","SELF_LOCK","2FA_REQUIRED","FORBIDDEN"].find(x=>m.indexOf(x)>=0);return k||""};
+const errCode=e=>{const m=String((e&&e.message)||e||"");const k=["AUTH","NEED_2FA_SETUP","BAD_LOGIN","LOCKED","BAD_CODE","TICKET_EXPIRED","PW_SHORT","BAD_USERNAME","USER_EXISTS","ALREADY_SETUP","BAD_OLD_PW","SELF_LOCK","2FA_REQUIRED","FORBIDDEN","BAD_EMAIL"].find(x=>m.indexOf(x)>=0);return k||""};
 const errMsg=e=>{const c=errCode(e);return (c&&TX["E_"+c])||TX.E_GEN};
 // semua akses data lewat call(token,...) di server
 async function api(fn,...args){
